@@ -2,212 +2,177 @@ import sys
 from Registry import Registry
 
 def setup_output():
-    """Set up output to both console and file"""
-    class TeeOutput:
+    """Set up output to console and file"""
+    class DualOutput:
         def __init__(self, *files):
             self.files = files
-        
-        def write(self, obj):
+        def write(self, text):
             for f in self.files:
-                f.write(obj)
-        
+                f.write(text)
         def flush(self):
             for f in self.files:
                 f.flush()
     
-    # Create output file
-    output_file = open("forensics_analysis_report.txt", "w", encoding="utf-8")
-    
-    # Tee output to both console and file
-    sys.stdout = TeeOutput(sys.stdout, output_file)
+    output_file = open("forensics_report.txt", "w", encoding="utf-8")
+    sys.stdout = DualOutput(sys.stdout, output_file)
     return output_file
 
-def analyze_system_info(software_hive_path):
-    print("=== SYSTEM INFORMATION FROM SOFTWARE HIVE ===")
+def analyze_system_info(software_hive):
+    """Get basic system information"""
+    print("=== SYSTEM INFORMATION ===")
     try:
-        reg = Registry.Registry(software_hive_path)
+        reg = Registry.Registry(software_hive)
         key = reg.open("Microsoft\\Windows NT\\CurrentVersion")
         
-        print(f"Product Name: {key.value('ProductName').value()}")
-        print(f"Registered Owner: {key.value('RegisteredOwner').value()}")
+        print(f"OS: {key.value('ProductName').value()}")
+        print(f"User: {key.value('RegisteredOwner').value()}")
         print(f"Version: {key.value('CurrentVersion').value()}")
         print(f"Build: {key.value('CurrentBuildNumber').value()}")
         
-        # Handle Service Pack which might not exist
         try:
             sp = key.value('CSDVersion').value()
             print(f"Service Pack: {sp}")
-        except Registry.RegistryValueNotFoundException:
+        except:
             print("Service Pack: None")
             
     except Exception as e:
-        print(f"Error reading SOFTWARE hive: {e}")
+        print(f"Error reading system info: {e}")
 
-def analyze_user_accounts(sam_hive_path):
-    print("\n=== USER ACCOUNTS FROM SAM HIVE ===")
+def analyze_users(sam_hive):
+    """List all user accounts"""
+    print("\n=== USER ACCOUNTS ===")
     try:
-        reg = Registry.Registry(sam_hive_path)
+        reg = Registry.Registry(sam_hive)
         key = reg.open("SAM\\Domains\\Account\\Users\\Names")
         
-        users = []
-        for user in key.subkeys():
-            users.append(user.name())
-        
-        print("Local Users Found:")
+        users = [user.name() for user in key.subkeys()]
+        print("Accounts found:")
         for user in sorted(users):
             print(f"  - {user}")
-            
-        print(f"\nTotal Users: {len(users)}")
+        print(f"Total: {len(users)} users")
             
     except Exception as e:
-        print(f"Error reading SAM hive: {e}")
+        print(f"Error reading user accounts: {e}")
 
-def analyze_installed_apps(software_hive_path):
-    print("\n=== INSTALLED APPLICATIONS ===")
+def analyze_software(software_hive):
+    """List installed programs"""
+    print("\n=== INSTALLED SOFTWARE ===")
     try:
-        reg = Registry.Registry(software_hive_path)
+        reg = Registry.Registry(software_hive)
+        programs = []
         
-        # Method 1: From Uninstall keys
-        print("From Uninstall Keys:")
-        app_count = 0
+        # Get programs from uninstall entries
         try:
-            uninstall_key = reg.open("Microsoft\\Windows\\CurrentVersion\\Uninstall")
-            for app in uninstall_key.subkeys():
+            uninstall = reg.open("Microsoft\\Windows\\CurrentVersion\\Uninstall")
+            for app in uninstall.subkeys():
                 try:
-                    name = app.value("DisplayName").value()
-                    print(f"  - {name}")
-                    app_count += 1
-                except Registry.RegistryValueNotFoundException:
+                    programs.append(app.value("DisplayName").value())
+                except:
                     continue
-        except Registry.RegistryKeyNotFoundException:
+        except:
             pass
         
-        # Method 2: From App Paths (executable applications)
-        print("\nFrom Application Paths:")
+        # Get registered applications
         try:
             app_paths = reg.open("Microsoft\\Windows\\CurrentVersion\\App Paths")
             for app in app_paths.subkeys():
-                print(f"  - {app.name()}")
-                app_count += 1
-        except Registry.RegistryKeyNotFoundException:
+                programs.append(app.name())
+        except:
             pass
         
-        print(f"\nTotal Applications Found: {app_count}")
+        for program in programs:
+            print(f"  - {program}")
+        print(f"Total: {len(programs)} programs")
             
     except Exception as e:
-        print(f"Error reading installed apps: {e}")
+        print(f"Error reading software: {e}")
 
-def analyze_usb_history(system_hive_path):
-    print("\n=== USB DEVICE HISTORY ===")
+def analyze_usb(system_hive):
+    """Show USB device history"""
+    print("\n=== USB DEVICES ===")
     try:
-        reg = Registry.Registry(system_hive_path)
-        
-        # USB Device IDs
+        reg = Registry.Registry(system_hive)
         usb_count = 0
+        
+        # USB devices
         try:
             usb_key = reg.open("ControlSet001\\Enum\\USB")
-            print("USB Devices Found:")
             for device in usb_key.subkeys():
-                if device.name() not in ["ROOT_HUB", "ROOT_HUB20"]:  # Filter out root hubs
+                if device.name() not in ["ROOT_HUB", "ROOT_HUB20"]:
                     print(f"  - {device.name()}")
                     usb_count += 1
-                    for subdevice in device.subkeys():
-                        try:
-                            friendly_name = subdevice.value("FriendlyName").value()
-                            print(f"    -> {friendly_name}")
-                        except Registry.RegistryValueNotFoundException:
-                            print(f"    -> {subdevice.name()}")
-        except Registry.RegistryKeyNotFoundException:
-            print("No USB history found")
-            
-        # USBSTOR - Mass Storage Devices
+        except:
+            print("No USB devices found")
+        
+        # USB storage
         try:
-            usbstor_key = reg.open("ControlSet001\\Enum\\USBSTOR")
-            print("\nUSB Mass Storage Devices:")
-            for device in usbstor_key.subkeys():
+            usbstor = reg.open("ControlSet001\\Enum\\USBSTOR")
+            for device in usbstor.subkeys():
                 print(f"  - {device.name()}")
                 usb_count += 1
-        except Registry.RegistryKeyNotFoundException:
-            print("No USB storage devices found")
+        except:
+            pass
         
-        print(f"\nTotal USB Devices: {usb_count}")
+        print(f"Total: {usb_count} USB devices")
             
     except Exception as e:
         print(f"Error reading USB history: {e}")
 
-def analyze_command_history(ntuser_path):
+def analyze_commands(ntuser_hive):
+    """Check command history"""
     print("\n=== COMMAND HISTORY ===")
     try:
-        reg = Registry.Registry(ntuser_path)
+        reg = Registry.Registry(ntuser_hive)
         
-        # PowerShell History
+        # PowerShell
         try:
-            ps_key = reg.open("Software\\Microsoft\\PowerShell\\ConsoleHost\\History")
-            commands = ps_key.value("History").value().split('\x00')
-            print("PowerShell Command History:")
-            cmd_count = 0
-            for cmd in commands:
-                if cmd.strip():
+            ps = reg.open("Software\\Microsoft\\PowerShell\\ConsoleHost\\History")
+            commands = [cmd for cmd in ps.value("History").value().split('\x00') if cmd.strip()]
+            if commands:
+                print("PowerShell commands:")
+                for cmd in commands:
                     print(f"  - {cmd}")
-                    cmd_count += 1
-            if cmd_count == 0:
-                print("  No PowerShell commands found")
-        except Registry.RegistryKeyNotFoundException:
-            print("No PowerShell history found")
+            else:
+                print("No PowerShell history")
+        except:
+            print("No PowerShell history")
         
-        # CMD RunMRU (recent Run commands)
+        # Run commands
         try:
-            runmru_key = reg.open("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\RunMRU")
-            print("\nRun Dialog History (Recent Commands):")
-            run_count = 0
-            for value in runmru_key.values():
-                if value.name() != "MRUList":
-                    print(f"  - {value.value()}")
-                    run_count += 1
-            if run_count == 0:
-                print("  No Run commands found")
-        except Registry.RegistryKeyNotFoundException:
-            print("No RunMRU history found")
+            run = reg.open("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\RunMRU")
+            commands = [v.value() for v in run.values() if v.name() != "MRUList"]
+            if commands:
+                print("Recent Run commands:")
+                for cmd in commands:
+                    print(f"  - {cmd}")
+            else:
+                print("No Run commands")
+        except:
+            print("No Run commands")
             
     except Exception as e:
         print(f"Error reading command history: {e}")
 
 def main():
-    # Set up output to file and console
     output_file = setup_output()
     
-    print("=" * 60)
-    print("DIGITAL FORENSICS REGISTRY ANALYZER")
-    print("KH5036CMD Digital Forensics Coursework")
-    print("=" * 60)
-    print("Output also saved to: forensics_analysis_report.txt")
-    print("=" * 60)
+    print("=" * 50)
+    print("FORENSIC REGISTRY ANALYSIS")
+    print("=" * 50)
     
-    # File names - must match your extracted files exactly
-    software_hive = "software_hive"
-    sam_hive = "sam_hive" 
-    system_hive = "system_hive"
-    ntuser_hive = "ntuser.dat"
+    # Analyze registry hives
+    analyze_system_info("software_hive")
+    analyze_users("sam_hive")
+    analyze_software("software_hive")
+    analyze_usb("system_hive")
+    analyze_commands("ntuser.dat")
     
-    # Run all analyses
-    analyze_system_info(software_hive)
-    analyze_user_accounts(sam_hive)
-    analyze_installed_apps(software_hive)
-    analyze_usb_history(system_hive)
-    analyze_command_history(ntuser_hive)
-    
-    print("\n" + "=" * 60)
+    print("\n" + "=" * 50)
     print("ANALYSIS COMPLETE")
-    print("Output saved to: forensics_analysis_report.txt")
-    print("=" * 60)
+    print("=" * 50)
     
-    # Close the output file
     output_file.close()
-    
-    # Restore stdout
     sys.stdout = sys.__stdout__
-    
-    print("\n✅ Analysis complete! Check 'forensics_analysis_report.txt' for saved results.")
 
 if __name__ == "__main__":
     main()

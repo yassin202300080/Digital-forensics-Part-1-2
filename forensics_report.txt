@@ -1,0 +1,104 @@
+==================================================
+FORENSIC REGISTRY ANALYSIS
+==================================================
+=== SYSTEM INFORMATION ===
+OS: Windows 7 Ultimate
+User: informant
+Version: 6.1
+Build: 7601
+Service Pack: Service Pack 1
+
+=== USER ACCOUNTS ===
+Accounts found:
+  - Administrator
+  - Guest
+  - ITechTeam
+  - admin11
+  - informant
+  - temporary
+Total: 6 users
+
+=== INSTALLED SOFTWARE ===
+  - Microsoft .NET Framework 4 Client Profile
+  - Microsoft .NET Framework 4 Extended
+  - Microsoft Office Professional Plus 2013
+  - Bonjour
+  - Microsoft .NET Framework 4 Extended
+  - Microsoft Access MUI (English) 2013
+  - Microsoft Excel MUI (English) 2013
+  - Microsoft PowerPoint MUI (English) 2013
+  - Microsoft Publisher MUI (English) 2013
+  - Microsoft Outlook MUI (English) 2013
+  - Microsoft Word MUI (English) 2013
+  - Microsoft Office Proofing Tools 2013 - English
+  - Outils de vérification linguistique 2013 de Microsoft Office - Français
+  - Microsoft Office Proofing Tools 2013 - Español
+  - Microsoft Office Proofing (English) 2013
+  - Microsoft InfoPath MUI (English) 2013
+  - Microsoft Office Shared MUI (English) 2013
+  - Microsoft DCF MUI (English) 2013
+  - Microsoft OneNote MUI (English) 2013
+  - Microsoft Groove MUI (English) 2013
+  - Microsoft Office 32-bit Components 2013
+  - Microsoft Office Shared 32-bit MUI (English) 2013
+  - Microsoft Office OSM MUI (English) 2013
+  - Microsoft Office OSM UX MUI (English) 2013
+  - Microsoft Office Shared Setup Metadata MUI (English) 2013
+  - Microsoft Access Setup Metadata MUI (English) 2013
+  - Microsoft Lync MUI (English) 2013
+  - Microsoft Office Professional Plus 2013
+  - Eraser 6.2.0.2962
+  - Microsoft .NET Framework 4 Client Profile
+  - chrome.exe
+  - cmmgr32.exe
+  - dvdmaker.exe
+  - Eraser.exe
+  - excel.exe
+  - IEDIAG.EXE
+  - IEDIAGCMD.EXE
+  - IEXPLORE.EXE
+  - install.exe
+  - Journal.exe
+  - migwiz.exe
+  - mip.exe
+  - mplayer2.exe
+  - MsoHtmEd.exe
+  - msoxmled.exe
+  - OUTLOOK.EXE
+  - pbrush.exe
+  - powerpnt.exe
+  - PowerShell.exe
+  - setup.exe
+  - sidebar.exe
+  - SnippingTool.exe
+  - table30.exe
+  - TabTip.exe
+  - vstoee.dll
+  - wab.exe
+  - wabmig.exe
+  - Winword.exe
+  - wmplayer.exe
+  - WORDPAD.EXE
+  - WRITE.EXE
+Total: 61 programs
+
+=== USB DEVICES ===
+  - VID_04B4&PID_6560
+  - VID_0781&PID_5571
+  - VID_0E0F&PID_0002
+  - VID_0E0F&PID_0003
+  - VID_0E0F&PID_0003&MI_00
+  - VID_0E0F&PID_0003&MI_01
+  - VID_14DD&PID_1005
+  - Disk&Ven_SanDisk&Prod_Cruzer_Fit&Rev_2.01
+Total: 8 USB devices
+
+=== COMMAND HISTORY ===
+No PowerShell history
+Recent Run commands:
+  - cmd\1
+  - \\10.11.11.128\secured_drive\1
+
+==================================================
+ANALYSIS COMPLETE
+==================================================
