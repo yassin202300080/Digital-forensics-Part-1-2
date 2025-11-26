@@ -24,3 +24,11 @@ sector number : where the partition begins
 9. the file systems signatures are checked. the partion format are detected by patterns including NFTS, FAT32.
 
 part2: Disk Image Analysis
+
+1. the extracted system information reads the software registry hive to get operating system details including Windows version, registered owner, build number, and service pack information.
+
+2. User account analysis accesses the sam hive to list all local user accounts stored in the security database, displaying both active and inactive user profiles.
+
+3. It makes a list of all installed programs by looking in two places in the registry the uninstall list and registered applications.
+4. then the usb devices histrory are read through thr system registry file 
+
